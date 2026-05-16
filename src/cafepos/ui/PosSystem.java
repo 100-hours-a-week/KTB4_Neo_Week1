@@ -12,16 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PosSystem {
+    // 판매 메뉴와 현재 장바구니 상태
 
-    /*
-     * menuList : 판매되는 메뉴들에 대한 정보를 저장하는 리스트
-     * curShoppingCart : 현재 시점의 장바구니 상태를 저장
-     *
-     */
     private final List<MenuItem> menuList = new ArrayList<>();
     private final ShoppingCart curShoppingCart = new ShoppingCart();
 
-    // 콘솔 입력을 같은 Scanner로 처리
     private final Scanner sc = new Scanner(System.in);
     private final PaymentService paymentService = new PaymentService(sc);
 
@@ -51,9 +46,11 @@ public class PosSystem {
         menuList.add(new Cookie(10, "버터쿠키", 2000));
     }
 
+
     private void start() {
         boolean running = true;
 
+        // 메인 루프: 화면 출력 -> 사용자 선택 -> 주문/결제/종료 처리
         while(running) {
             printScreen();
 
@@ -64,6 +61,7 @@ public class PosSystem {
 
             switch(input) {
                 case 1 -> {
+                    // 1) 메뉴 선택
                     System.out.println("메뉴를 보고 메뉴 번호를 선택해주세요.");
                     int menuId = readMenuId();
 
@@ -77,11 +75,11 @@ public class PosSystem {
                     int qty = readQty();
 
                     if (selectedMenu instanceof Drink drink) {
-                        // Drink 메뉴의 경우 원하는 수량을 담을 때,
-                        // 해당 수량만큼 반복문을 돌려 옵션도 여러 번 선택할 수 있도록 해야 함.
+                        // 음료는 잔 단위로 옵션이 달라질 수 있어 수량만큼 개별 OrderItem으로 생성
                         for (int i = 1; i <= qty; i++) {
                             OrderItem orderItem = new OrderItem(selectedMenu, 1);
 
+                            // 아이스 가능 음료만 핫 or ice / 얼음 옵션 입력
                             if (drink.isAvailableIce()) {
                                 IceOrHot iceOrHot = readIceOrHot(i);
                                 orderItem.setIceOrHot(iceOrHot);
@@ -95,6 +93,7 @@ public class PosSystem {
                             curShoppingCart.addItem(orderItem);
                         }
                     } else {
+                        // 음료가 아닌 경우 같은 라인으로 처리
                         OrderItem orderItem = new OrderItem(selectedMenu, qty);
 
                         if(selectedMenu instanceof Cake) {
@@ -108,6 +107,7 @@ public class PosSystem {
                     System.out.println("선택하신 상품이 장바구니에 추가되었습니다.");
                 }
                 case 2 -> {
+                    // 2) 결제 성공 시 장바구니 초기화
                     boolean paid = paymentService.processPayment(curShoppingCart);
                     if (paid) {
                         curShoppingCart.clear();

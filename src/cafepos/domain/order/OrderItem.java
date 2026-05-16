@@ -56,7 +56,7 @@ public class OrderItem {
                 if(iceOrHot == IceOrHot.ICE) {
                     sb.append("아이스");
                     if (iceAmount != null) {
-                        sb.append(" / 얼음 ").append(iceAmount.getLabel()).append("");
+                        sb.append(" / 얼음 ").append(iceAmount.getLabel());
                     }
                 }
                 else {

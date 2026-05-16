@@ -1,48 +1,110 @@
 @startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
 
-abstract class MenuItem {
-    - id : int
-    - name : String
-    - price : int
-
-    + getPrice() : int
-    + printInfo() : void
+class PosSystem {
+  - menuList : List<MenuItem>
+  - curShoppingCart : ShoppingCart
+  - paymentService : PaymentService
+  + main(args : String[]) : void
+  - initMenu() : void
+  - start() : void
+  - getMenuById(id : int) : MenuItem
+  - readForkCount() : int
+  - readIceOrHot(cupNo : int) : IceOrHot
+  - readIceAmount(cupNo : int) : IceAmount
+  - readMenuId() : int
+  - readQty() : int
+  - readInt() : int
+  - printScreen() : void
 }
 
-abstract class Drink {
-    + prepare() : void
+class PaymentService {
+  + processPayment(shoppingCart : ShoppingCart) : boolean
 }
 
-class Coffee
-class Tea
+class MenuItem {
+  - id : int
+  - name : String
+  - price : int
+  + getId() : int
+  + getName() : String
+  + getPrice() : int
+  + getCategory() : String
+  + printInfo() : void
+}
+class Drink {
+  - isAvailableIce : boolean
+  + isAvailableIce() : boolean
+}
+class Dessert {
+}
+class Coffee {
+}
+class Tea {
+}
+class Cake {
+}
+class Cookie {
+}
 
 class OrderItem {
-    - quantity : int
-    - iceAmount : IceAmount
+  - menuItem : MenuItem
+  - quantity : int
+  - iceOrHot : IceOrHot
+  - iceAmount : IceAmount
+  - forkCount : int
+  + getMenuItem() : MenuItem
+  + getQuantity() : int
+  + getIceOrHot() : IceOrHot
+  + getIceAmount() : IceAmount
+  + getForkCount() : int
+  + setIceOrHot(iceOrHot : IceOrHot) : void
+  + setIceAmount(iceAmount : IceAmount) : void
+  + setForkCount(forkCount : int) : void
+  + addQuantity(q : int) : void
+  + getItemPrice() : int
+  + getOption() : String
+}
 
-    + getSubtotal() : int
+enum IceOrHot {
+  HOT
+  ICE
+  - label : String
+  + getLabel() : String
+}
+enum IceAmount {
+  LESS
+  MORE
+  NONE
+  - label : String
+  + getLabel() : String
 }
 
 class ShoppingCart {
-    - items : List<OrderItem>
-
-    + addItem() : void
-    + calculateTotal() : int
+  - items : List<OrderItem>
+  + addItem(newItem : OrderItem) : void
+  + isEmpty() : boolean
+  + getTotalPrice() : int
+  ~ isSameLine(a : OrderItem, b : OrderItem) : boolean
+  + printCart() : void
+  + clear() : void
 }
 
-enum IceAmount {
-    LESS
-    NORMAL
-    MORE
-}
-
-MenuItem <|-- Drink
-Drink <|-- Coffee
-Drink <|-- Tea
-
-OrderItem --> MenuItem
-OrderItem --> IceAmount
+Drink --|> MenuItem
+Dessert --|> MenuItem
+Coffee --|> Drink
+Tea --|> Drink
+Cake --|> Dessert
+Cookie --|> Dessert
 
 ShoppingCart --> OrderItem
+OrderItem --> MenuItem
+OrderItem --> IceOrHot
+OrderItem --> IceAmount
 
+PosSystem --> ShoppingCart
+PosSystem --> PaymentService
+PosSystem --> MenuItem
+PosSystem --> OrderItem
 @enduml

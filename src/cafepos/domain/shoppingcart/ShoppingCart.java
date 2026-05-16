@@ -8,11 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/*
-* 장바구니 콘솔 표기를 위한 클래스
-* 같은 메뉴 + 같은 옵션이면 콘솔에 합쳐서 표기될 수 있게 하기.
-* 같은 메뉴여도 옵션이 다르다면 나누어 장바구니에서 표기하기.
-*/
+// 장바구니 라인 병합 규칙을 관리한다.
+// 같은 메뉴라도 옵션이 다르면 별도 라인으로 유지한다.
+
 public class ShoppingCart {
     private final List<OrderItem> items = new ArrayList<>();
 
@@ -41,10 +39,9 @@ public class ShoppingCart {
         return total;
     }
 
-    // 장바구니에서 같은 메뉴, 같은 옵션을 가진 라인을 하나로 합치기
-    // 커피는 옵션이 다르다면 분리해서 표기할 수 있도록 해야하고,
-    // 케이크의 포크 옵션 같은 경우는 인원 수에 맞게 고객이 선택한 포크를 중복해서
-    // 제공할 필요가 없으므로, 굳이 분리해서 표기할 필요 없음.
+    // 메뉴 ID가 같고, 음료는 온도/얼음 양 옵션까지 같을 때만 같은 라인으로 합친다.
+    // 디저트는 옵션(예: 포크 수)과 무관하게 같은 메뉴면 같은 라인으로 본다.
+    // 포크는 보통 고객 수 만큼 체크하기 때문이다.
     boolean isSameLine(OrderItem a, OrderItem b) {
         boolean sameMenu = a.getMenuItem().getId() == b.getMenuItem().getId();
 
