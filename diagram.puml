@@ -1,0 +1,48 @@
+@startuml
+
+abstract class MenuItem {
+    - id : int
+    - name : String
+    - price : int
+
+    + getPrice() : int
+    + printInfo() : void
+}
+
+abstract class Drink {
+    + prepare() : void
+}
+
+class Coffee
+class Tea
+
+class OrderItem {
+    - quantity : int
+    - iceAmount : IceAmount
+
+    + getSubtotal() : int
+}
+
+class ShoppingCart {
+    - items : List<OrderItem>
+
+    + addItem() : void
+    + calculateTotal() : int
+}
+
+enum IceAmount {
+    LESS
+    NORMAL
+    MORE
+}
+
+MenuItem <|-- Drink
+Drink <|-- Coffee
+Drink <|-- Tea
+
+OrderItem --> MenuItem
+OrderItem --> IceAmount
+
+ShoppingCart --> OrderItem
+
+@enduml
