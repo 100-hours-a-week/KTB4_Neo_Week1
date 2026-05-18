@@ -12,13 +12,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PosSystem {
-    // 판매 메뉴와 현재 장바구니 상태
-
     private final List<MenuItem> menuList = new ArrayList<>();
     private final ShoppingCart curShoppingCart = new ShoppingCart();
 
     private final Scanner sc = new Scanner(System.in);
-    private final PaymentService paymentService = new PaymentService(sc);
+
+    private final InputView inputView = new InputView(sc);
+    private final OutputView outputView = new OutputView();
+
+    private final PaymentService paymentService = new PaymentService();
 
 
     public static void main(String[] args) {
@@ -50,42 +52,34 @@ public class PosSystem {
     private void start() {
         boolean running = true;
 
-        // 메인 루프: 화면 출력 -> 사용자 선택 -> 주문/결제/종료 처리
         while(running) {
-            printScreen();
+            outputView.printMainScreen(menuList, curShoppingCart);
+            outputView.printMainActions();
 
-            System.out.println("무엇을 도와드릴까요 ?");
-            System.out.println("1) 메뉴 주문    2) 장바구니 결제    3) 종료하기\n");
-
-            int input = readInt();
+            int input = inputView.readMainMenu();
 
             switch(input) {
                 case 1 -> {
-                    // 1) 메뉴 선택
-                    System.out.println("메뉴를 보고 메뉴 번호를 선택해주세요.");
-                    int menuId = readMenuId();
+                    int menuId = inputView.readMenuId();
 
                     MenuItem selectedMenu = getMenuById(menuId);
                     if(selectedMenu == null) {
-                        System.out.println("선택하신 메뉴는 없는 메뉴입니다.");
+                        outputView.printInvalidMenuSelect();
                         continue;
                     }
 
-                    System.out.println("해당 상품 구매하실 수량을 입력하세요.");
-                    int qty = readQty();
+                    int qty = inputView.readQuantity();
 
                     if (selectedMenu instanceof Drink drink) {
-                        // 음료는 잔 단위로 옵션이 달라질 수 있어 수량만큼 개별 OrderItem으로 생성
                         for (int i = 1; i <= qty; i++) {
                             OrderItem orderItem = new OrderItem(selectedMenu, 1);
 
-                            // 아이스 가능 음료만 핫 or ice / 얼음 옵션 입력
                             if (drink.isAvailableIce()) {
-                                IceOrHot iceOrHot = readIceOrHot(i);
+                                IceOrHot iceOrHot = inputView.readIceOrHot(i);
                                 orderItem.setIceOrHot(iceOrHot);
 
                                 if (iceOrHot == IceOrHot.ICE) {
-                                    IceAmount ice = readIceAmount(i);
+                                    IceAmount ice = inputView.readIceAmount(i);
                                     orderItem.setIceAmount(ice);
                                 }
                             }
@@ -93,33 +87,42 @@ public class PosSystem {
                             curShoppingCart.addItem(orderItem);
                         }
                     } else {
-                        // 음료가 아닌 경우 같은 라인으로 처리
                         OrderItem orderItem = new OrderItem(selectedMenu, qty);
 
                         if(selectedMenu instanceof Cake) {
-                        int fork = readForkCount();
-                        orderItem.setForkCount(fork);
-                    }
+                            int fork = inputView.readForkCount();
+                            orderItem.setForkCount(fork);
+                        }
 
                         curShoppingCart.addItem(orderItem);
                     }
 
-                    System.out.println("선택하신 상품이 장바구니에 추가되었습니다.");
+                    outputView.printAddCart();
                 }
                 case 2 -> {
-                    // 2) 결제 성공 시 장바구니 초기화
-                    boolean paid = paymentService.processPayment(curShoppingCart);
+                    if (!paymentService.canPay(curShoppingCart)) {
+                        outputView.printPaymentFailed();
+                        break;
+                    }
+
+                    int totalPrice = paymentService.calculatePaymentPrice(curShoppingCart);
+                    outputView.printPaymentPrice(totalPrice);
+
+                    boolean confirm = inputView.readPaymentConfirm();
+                    boolean paid = paymentService.processPayment(confirm);
+
                     if (paid) {
+                        outputView.printPaymentCompleted();
                         curShoppingCart.clear();
+                    } else {
+                        outputView.printPaymentCanceled();
                     }
                 }
                 case 3 -> {
-                    System.out.println("Pos 프로그램을 종료합니다.");
+                    outputView.printExit();
                     running = false;
                 }
-                default -> {
-                    System.out.println("올바르지 않은 선택입니다.");
-                }
+                default -> outputView.printInvalidChoice();
             }
         }
 
@@ -132,134 +135,5 @@ public class PosSystem {
         }
 
         return null;
-    }
-
-    private int readForkCount() {
-        while (true) {
-            System.out.println("필요한 포크 갯수를 입력하세요.");
-            try {
-                int n = Integer.parseInt(sc.nextLine().trim());
-
-                if(n < 1) {
-                    throw new IllegalArgumentException();
-                }
-
-                return n;
-            }
-            catch (NumberFormatException e) {
-                System.out.println("숫자로 입력하세요.");
-            }
-            catch (IllegalArgumentException e) {
-                System.out.println("올바른 갯수를 입력하세요.");
-            }
-        }
-    }
-
-    private IceOrHot readIceOrHot(int cupNo) {
-        System.out.printf("%d번째 음료 온도를 선택하세요.%n", cupNo);
-        System.out.println("1) 핫    2) 아이스");
-        while(true) {
-            int input = readInt();
-
-            switch(input) {
-                case 1 -> { return IceOrHot.HOT; }
-                case 2 -> { return IceOrHot.ICE; }
-                default -> { System.out.println("올바른 옵션을 고르세요.");}
-            }
-        }
-    }
-
-    private IceAmount readIceAmount(int cupNo) {
-        System.out.printf("%d번째 음료의 얼음 양을 선택하세요.%n", cupNo);
-        System.out.println("1) 적게    2) 많이    3) 없이");
-        while(true) {
-            int input = readInt();
-
-            switch(input) {
-                case 1 -> { return IceAmount.LESS; }
-                case 2 -> { return IceAmount.MORE; }
-                case 3 -> { return IceAmount.NONE; }
-                default -> { System.out.println("올바른 얼음 양을 고르세요.");}
-            }
-        }
-    }
-
-    private int readMenuId() {
-        while (true) {
-            try {
-                int menuId = Integer.parseInt(sc.nextLine().trim());
-
-                if (menuId < 1) {
-                    throw new IllegalArgumentException();
-                }
-
-                return menuId;
-            }
-            catch (NumberFormatException e) {
-                System.out.println("숫자로 입력하세요.");
-            }
-            catch (IllegalArgumentException e) {
-                System.out.println("올바른 메뉴 번호를 입력하세요.");
-            }
-        }
-    }
-
-    private int readQty() {
-        while(true) {
-            try{
-                int qty = Integer.parseInt(sc.nextLine().trim());
-
-                if(qty < 1) {
-                    throw new IllegalArgumentException();
-                }
-
-                return qty;
-            }
-            catch (NumberFormatException e) {
-                System.out.println("숫자로 입력하세요.");
-            }
-            catch (IllegalArgumentException e) {
-                System.out.println("올바른 수량을 입력하세요.");
-            }
-        }
-    }
-
-    private int readInt() {
-        while(true) {
-            try {
-                int num = Integer.parseInt(sc.nextLine().trim());
-
-                if(num < 1 || num > 3) {
-                    throw new IllegalArgumentException();
-                }
-
-                return num;
-            }
-            catch (NumberFormatException e) {
-                System.out.println("숫자로 입력하세요.");
-            }
-            catch (IllegalArgumentException e) {
-                 System.out.println("올바른 옵션을 선택하세요.");
-            }
-        }
-    }
-
-    private void printScreen() {
-
-        System.out.println("\n\n=================================================");
-        System.out.println("                    Cafe Pos System");
-        System.out.println("=================================================\n\n");
-
-        System.out.println("[Menu]");
-        for(MenuItem menuItem : menuList) {
-            menuItem.printInfo();
-        }
-
-        System.out.println("\n\n-------------------------------------------------");
-        System.out.println("[Shopping Cart]");
-
-        curShoppingCart.printCart();
-
-        System.out.println("-------------------------------------------------\n");
     }
 }

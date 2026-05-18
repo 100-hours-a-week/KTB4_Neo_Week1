@@ -5,6 +5,7 @@ import cafepos.domain.menu.Drink;
 import cafepos.domain.option.IceOrHot;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -39,9 +40,10 @@ public class ShoppingCart {
         return total;
     }
 
-    // 메뉴 ID가 같고, 음료는 온도/얼음 양 옵션까지 같을 때만 같은 라인으로 합친다.
-    // 디저트는 옵션(예: 포크 수)과 무관하게 같은 메뉴면 같은 라인으로 본다.
-    // 포크는 보통 고객 수 만큼 체크하기 때문이다.
+    public List<OrderItem> getItems() {
+        return Collections.unmodifiableList(items);
+    }
+
     boolean isSameLine(OrderItem a, OrderItem b) {
         boolean sameMenu = a.getMenuItem().getId() == b.getMenuItem().getId();
 
@@ -59,31 +61,6 @@ public class ShoppingCart {
         }
 
         return true;
-    }
-
-    public void printCart() {
-        if(items.isEmpty()) {
-            System.out.println("장바구니가 비어 있습니다.");
-            return;
-        }
-
-        for(int i = 0; i < items.size(); i++) {
-            OrderItem item = items.get(i);
-            String option = item.getOption();
-
-            System.out.printf("%3d)  %-10s  %-3d  %6d원\n",
-                    i + 1,
-                    item.getMenuItem().getName(),
-                    item.getQuantity(),
-                    item.getItemPrice());
-
-            if(!option.isBlank()) {
-                System.out.println("    (" + option + ")");
-            }
-        }
-
-        System.out.println();
-        System.out.printf("총 금액 : %10d\n", getTotalPrice());
     }
 
     public void clear() {
