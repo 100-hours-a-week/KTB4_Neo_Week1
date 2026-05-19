@@ -1,14 +1,13 @@
 package cafepos.domain.order;
 
-import cafepos.domain.menu.Cake;
-import cafepos.domain.menu.Drink;
-import cafepos.domain.menu.MenuItem;
+import cafepos.domain.menu.MenuCategory;
+import cafepos.domain.menu.MenuData;
 import cafepos.domain.option.IceAmount;
 import cafepos.domain.option.IceOrHot;
 
 public class OrderItem {
 
-    private final MenuItem menuItem;
+    private final MenuData menuData;
     private int quantity;
 
     private IceOrHot iceOrHot;
@@ -16,16 +15,15 @@ public class OrderItem {
 
     private int forkCount;
 
-    public OrderItem(MenuItem menuItem, int quantity) {
-        this.menuItem = menuItem;
+    public OrderItem(MenuData menuData, int quantity) {
+        this.menuData = menuData;
         this.quantity = quantity;
     }
 
-    public MenuItem getMenuItem() { return menuItem; }
+    public MenuData getMenuData() { return menuData; }
     public int getQuantity() { return quantity; }
     public IceOrHot getIceOrHot() { return iceOrHot; }
     public IceAmount getIceAmount() { return iceAmount; }
-    public int getForkCount() { return forkCount; }
 
 
     public void setIceOrHot(IceOrHot iceOrHot) {
@@ -45,14 +43,13 @@ public class OrderItem {
     }
 
     public int getItemPrice() {
-        return menuItem.getPrice() * quantity;
+        return menuData.getPrice() * quantity;
     }
 
     public String getOption() {
         StringBuilder sb = new StringBuilder();
 
-        if(menuItem instanceof Drink drink) {
-            if(drink.isAvailableIce()) {
+        if (menuData.isAvailableIce()) {
                 if(iceOrHot == IceOrHot.ICE) {
                     sb.append("아이스");
                     if (iceAmount != null) {
@@ -62,10 +59,9 @@ public class OrderItem {
                 else {
                     sb.append("핫");
                 }
-            }
         }
 
-        if(menuItem instanceof Cake cake) {
+        if (menuData.getCategory() == MenuCategory.CAKE) {
             sb.append("포크 : ").append(forkCount).append("개");
         }
 

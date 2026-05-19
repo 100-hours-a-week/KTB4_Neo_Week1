@@ -1,6 +1,7 @@
 package cafepos.ui;
 
-import cafepos.domain.menu.*;
+import cafepos.domain.menu.MenuCategory;
+import cafepos.domain.menu.MenuData;
 import cafepos.domain.option.IceAmount;
 import cafepos.domain.option.IceOrHot;
 import cafepos.domain.order.OrderItem;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PosSystem {
-    private final List<MenuItem> menuList = new ArrayList<>();
+    private final List<MenuData> menuList = new ArrayList<>();
     private final ShoppingCart curShoppingCart = new ShoppingCart();
 
     private final Scanner sc = new Scanner(System.in);
@@ -33,19 +34,7 @@ public class PosSystem {
 
 
     private void initMenu() {
-        menuList.add(new Coffee(1, "아메리카노", 4000, true));
-        menuList.add(new Coffee(2, "에스프레소", 3000, false));
-        menuList.add(new Coffee(3, "바닐라라떼", 4500, true));
-
-        menuList.add(new Tea(4, "얼그레이", 3000, true));
-        menuList.add(new Tea(5, "자몽허니블랙티", 4000, true));
-        menuList.add(new Tea(6, "캐모마일", 3000, true));
-
-        menuList.add(new Cake(7, "초코케이크", 6500));
-        menuList.add(new Cake(8, "치즈케이크", 6000));
-
-        menuList.add(new Cookie(9, "초코칩쿠키", 2500));
-        menuList.add(new Cookie(10, "버터쿠키", 2000));
+        menuList.addAll(List.of(MenuData.values()));
     }
 
 
@@ -62,19 +51,20 @@ public class PosSystem {
                 case 1 -> {
                     int menuId = inputView.readMenuId();
 
-                    MenuItem selectedMenu = getMenuById(menuId);
+                    MenuData selectedMenu = MenuData.findById(menuId);
                     if(selectedMenu == null) {
                         outputView.printInvalidMenuSelect();
                         continue;
                     }
 
                     int qty = inputView.readQuantity();
+                    boolean isDrink = selectedMenu.getCategory().isDrink();
 
-                    if (selectedMenu instanceof Drink drink) {
+                    if (isDrink) {
                         for (int i = 1; i <= qty; i++) {
                             OrderItem orderItem = new OrderItem(selectedMenu, 1);
 
-                            if (drink.isAvailableIce()) {
+                            if (selectedMenu.isAvailableIce()) {
                                 IceOrHot iceOrHot = inputView.readIceOrHot(i);
                                 orderItem.setIceOrHot(iceOrHot);
 
@@ -89,7 +79,7 @@ public class PosSystem {
                     } else {
                         OrderItem orderItem = new OrderItem(selectedMenu, qty);
 
-                        if(selectedMenu instanceof Cake) {
+                        if (selectedMenu.getCategory() == MenuCategory.CAKE) {
                             int fork = inputView.readForkCount();
                             orderItem.setForkCount(fork);
                         }
@@ -128,12 +118,4 @@ public class PosSystem {
 
     }
 
-    private MenuItem getMenuById(int id) {
-        for(MenuItem item : menuList) {
-            if(item.getId() == id)
-                return item;
-        }
-
-        return null;
-    }
 }

@@ -1,16 +1,12 @@
 package cafepos.domain.shoppingcart;
 
 import cafepos.domain.order.OrderItem;
-import cafepos.domain.menu.Drink;
 import cafepos.domain.option.IceOrHot;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-
-// 장바구니 라인 병합 규칙을 관리한다.
-// 같은 메뉴라도 옵션이 다르면 별도 라인으로 유지한다.
 
 public class ShoppingCart {
     private final List<OrderItem> items = new ArrayList<>();
@@ -45,12 +41,12 @@ public class ShoppingCart {
     }
 
     boolean isSameLine(OrderItem a, OrderItem b) {
-        boolean sameMenu = a.getMenuItem().getId() == b.getMenuItem().getId();
+        boolean sameMenu = a.getMenuData().getId() == b.getMenuData().getId();
 
         if(!sameMenu) return false;
 
-        boolean aIsDrink = a.getMenuItem() instanceof Drink;
-        boolean bIsDrink = b.getMenuItem() instanceof Drink;
+        boolean aIsDrink = a.getMenuData().getCategory().isDrink();
+        boolean bIsDrink = b.getMenuData().getCategory().isDrink();
 
         if(aIsDrink && bIsDrink) {
             if (a.getIceOrHot() != b.getIceOrHot()) return false;

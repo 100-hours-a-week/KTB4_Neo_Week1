@@ -1,5 +1,6 @@
 package cafepos.ui;
 
+import cafepos.domain.menu.MenuData;
 import cafepos.domain.option.IceAmount;
 import cafepos.domain.option.IceOrHot;
 
@@ -18,17 +19,17 @@ public class InputView {
 
     public int readMenuId() {
         System.out.println("메뉴를 보고 메뉴 번호를 선택해주세요.");
-        return readPositiveInt("올바른 메뉴 번호를 입력하세요.");
+        return readIntInRange(1, MenuData.getMaxMenuId(), "올바른 메뉴 번호를 입력하세요.");
     }
 
     public int readQuantity() {
         System.out.println("해당 상품 구매하실 수량을 입력하세요.");
-        return readPositiveInt("올바른 수량을 입력하세요.");
+        return readIntInRange(1, Integer.MAX_VALUE, "올바른 수량을 입력하세요.");
     }
 
     public int readForkCount() {
         System.out.println("필요한 포크 갯수를 입력하세요.");
-        return readPositiveInt("올바른 갯수를 입력하세요.");
+        return readIntInRange(1, Integer.MAX_VALUE, "올바른 갯수를 입력하세요.");
     }
 
     public IceOrHot readIceOrHot(int cupNo) {
@@ -42,7 +43,6 @@ public class InputView {
                 case 2:
                     return IceOrHot.ICE;
                 default:
-                    // no-op
             }
         }
     }
@@ -70,22 +70,6 @@ public class InputView {
             int input = readIntInRange(1, 2, "1 또는 2를 입력하세요.");
             if (input == 1) return true;
             if (input == 2) return false;
-        }
-    }
-
-    private int readPositiveInt(String invalidMessage) {
-        while (true) {
-            try {
-                int num = Integer.parseInt(sc.nextLine().trim());
-                if (num < 1) {
-                    throw new IllegalArgumentException();
-                }
-                return num;
-            } catch (NumberFormatException e) {
-                System.out.println("숫자로 입력하세요.");
-            } catch (IllegalArgumentException e) {
-                System.out.println(invalidMessage);
-            }
         }
     }
 

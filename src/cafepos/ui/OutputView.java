@@ -1,19 +1,19 @@
 package cafepos.ui;
 
-import cafepos.domain.menu.MenuItem;
+import cafepos.domain.menu.MenuData;
 import cafepos.domain.order.OrderItem;
 import cafepos.domain.shoppingcart.ShoppingCart;
 
 import java.util.List;
 
 public class OutputView {
-    public void printMainScreen(List<MenuItem> menuList, ShoppingCart shoppingCart) {
+    public void printMainScreen(List<MenuData> menuList, ShoppingCart shoppingCart) {
         System.out.println("\n\n=================================================");
         System.out.println("                    Cafe Pos System");
         System.out.println("=================================================\n\n");
 
         System.out.println("[Menu]");
-        for (MenuItem menuItem : menuList) {
+        for (MenuData menuItem : menuList) {
             menuItem.printInfo();
         }
 
@@ -69,13 +69,13 @@ public class OutputView {
 
             System.out.printf("%3d)  %-10s  %-3d  %-6d원\n",
                     i + 1,
-                    item.getMenuItem().getName(),
+                    item.getMenuData().getName(),
                     item.getQuantity(),
                     item.getItemPrice()
             );
 
             if(!option.isBlank()) {
-                System.out.println("    (" + option + "    )");
+                System.out.println("    (" + option + ")");
             }
         }
 
